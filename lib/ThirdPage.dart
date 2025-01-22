@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/FourthPage.dart';
 
 class ThirdPage extends StatelessWidget{
   @override
@@ -7,13 +8,14 @@ class ThirdPage extends StatelessWidget{
       appBar: AppBar(title : Text("ページ(3)")),
       body : Center(
         child: TextButton(
-          child: Text("最初のページに戻る"),
+          child: Text("4ページ目に遷移する"),
           // （1） 前の画面に戻る
           onPressed: (){
-            Navigator.popUntil(context, (route) => route.isFirst);
-            // （1） 指定した画面に遷移する
-              // （2） 実際に表示するページ(ウィジェット)を指定する
-              //Navigator.pop(context);
+            Navigator.push(
+              context, 
+              MaterialPageRoute(
+                // （2） 実際に表示するページ(ウィジェット)を指定する
+                builder: (context) => FourthPage()));
           },
         ),
       ));
