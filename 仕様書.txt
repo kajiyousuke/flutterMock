@@ -4,3 +4,6 @@
 
 Test_0.dart Test_1.dart Test_2.dartを新規作成
 →Test_0 Test_1 Test_2の順にページが遷移後、Test_0に戻る
+
+・今後の流れ
+既存のサンプルを参考に作成していきたい
