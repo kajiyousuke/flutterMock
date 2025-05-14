@@ -1,10 +1,10 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 class ResultScreen extends StatefulWidget {
-  final String fortune;
+  final String result;
+  final String message;
 
-  const ResultScreen({super.key, required this.fortune});
+  const ResultScreen({super.key, required this.result, required this.message});
 
   @override
   State<ResultScreen> createState() => _ResultScreenState();
@@ -12,231 +12,124 @@ class ResultScreen extends StatefulWidget {
 
 class _ResultScreenState extends State<ResultScreen>
     with SingleTickerProviderStateMixin {
-  late AnimationController _shakeController;
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  Color get backgroundColor {
+    switch (widget.result) {
+      case '大吉':
+        return Colors.red.shade100;
+      case '中吉':
+        return Colors.orange.shade100;
+      case '小吉':
+        return Colors.green.shade100;
+      case '末吉':
+        return Colors.blue.shade100;
+      case '凶':
+        return Colors.grey.shade300;
+      default:
+        return Colors.white;
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    _shakeController = AnimationController(
+
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 800),
       vsync: this,
-      duration: const Duration(milliseconds: 500),
     );
 
-    if (widget.fortune == '凶') {
-      _shakeController.repeat(reverse: true);
-    }
+    _animation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.elasticOut,
+    );
+
+    _controller.forward();
   }
 
   @override
   void dispose() {
-    _shakeController.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
-  Color getFortuneColor() {
-    switch (widget.fortune) {
+  Widget buildAnimation() {
+    switch (widget.result) {
       case '大吉':
-        return Colors.red;
-      case '中吉':
-        return Colors.orange;
-      case '小吉':
-        return Colors.green;
-      case '末吉':
-        return Colors.blue;
-      case '凶':
-        return Colors.grey;
-      default:
-        return Colors.black;
-    }
-  }
-
-  String getMessageForFortune(String fortune) {
-    final messages = {
-      '大吉': [
-        '今日は最高の一日になりそう！',
-        'チャンスを逃さずに行動してみよう！',
-      ],
-      '中吉': [
-        '良いことがじわじわと近づいています。',
-        '焦らず落ち着いて行動すると吉。',
-      ],
-      '小吉': [
-        '小さな幸せを見逃さないでね。',
-        '穏やかな気持ちで過ごそう。',
-      ],
-      '末吉': [
-        '徐々に運が開けてくるかも。',
-        '気長に待つのも大事。',
-      ],
-      '凶': [
-        '慎重に行動すれば回避できます！',
-        '今日は無理せず、ゆっくり過ごして。',
-      ],
-    };
-
-    final list = messages[fortune];
-    if (list == null || list.isEmpty) return '';
-    list.shuffle();
-    return list.first;
-  }
-
-  Widget buildAnimatedFortune() {
-    switch (widget.fortune) {
-      case '大吉':
-        return TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0.1, end: 1.0),
-          duration: const Duration(milliseconds: 1200),
-          curve: Curves.elasticOut,
-          builder: (context, value, child) {
-            return Opacity(
-              opacity: value.clamp(0.0, 1.0),
-              child: Transform.scale(
-                scale: value * 1.5,
-                child: Text(
-                  widget.fortune,
-                  style: TextStyle(
-                    fontSize: 44,
-                    fontWeight: FontWeight.bold,
-                    color: getFortuneColor(),
-                    shadows: [
-                      Shadow(
-                        blurRadius: 18,
-                        color: Colors.yellowAccent.withOpacity(0.8),
-                        offset: const Offset(0, 0),
-                      )
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
+        return ScaleTransition(
+          scale: _animation,
+          child: Icon(Icons.star, size: 120, color: Colors.amber),
         );
       case '中吉':
-        return TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0.8, end: 1.0),
-          duration: const Duration(milliseconds: 1000),
-          curve: Curves.easeOut,
-          builder: (context, value, child) {
-            return Opacity(
-              opacity: value,
-              child: Transform.scale(
-                scale: value,
-                child: Text(
-                  widget.fortune,
-                  style: TextStyle(
-                    fontSize: 40,
-                    fontWeight: FontWeight.w600,
-                    color: getFortuneColor(),
-                  ),
-                ),
-              ),
-            );
-          },
+        return RotationTransition(
+          turns: _animation,
+          child: Icon(Icons.sunny, size: 100, color: Colors.orange),
         );
       case '小吉':
-        return TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0.7, end: 1.0),
-          duration: const Duration(milliseconds: 900),
-          curve: Curves.bounceOut,
-          builder: (context, value, child) {
-            return Transform.scale(
-              scale: value,
-              child: Opacity(
-                opacity: value,
-                child: Text(
-                  widget.fortune,
-                  style: TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.w500,
-                    color: getFortuneColor(),
-                  ),
-                ),
-              ),
-            );
-          },
+        return FadeTransition(
+          opacity: _animation,
+          child: Icon(Icons.favorite, size: 90, color: Colors.pink),
         );
       case '末吉':
-        return TweenAnimationBuilder<Offset>(
-          tween: Tween(begin: const Offset(0, -0.5), end: Offset.zero),
-          duration: const Duration(milliseconds: 800),
-          curve: Curves.easeInOut,
-          builder: (context, value, child) {
-            return Transform.translate(
-              offset: value * 50,
-              child: Opacity(
-                opacity: 1.0 - value.dy.abs(),
-                child: Text(
-                  widget.fortune,
-                  style: TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.w500,
-                    color: getFortuneColor(),
-                  ),
-                ),
-              ),
-            );
-          },
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 1),
+            end: Offset.zero,
+          ).animate(_animation),
+          child: Icon(Icons.emoji_emotions, size: 90, color: Colors.blue),
         );
       case '凶':
-        return AnimatedBuilder(
-          animation: _shakeController,
-          builder: (context, child) {
-            double offset =
-                math.sin(_shakeController.value * 2 * math.pi) * 8;
-            return Transform.translate(
-              offset: Offset(offset, 0),
-              child: Text(
-                widget.fortune,
-                style: TextStyle(
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
-                  color: getFortuneColor(),
-                ),
-              ),
-            );
-          },
+        return FadeTransition(
+          opacity: Tween<double>(begin: 0.0, end: 1.0).animate(_animation),
+          child: Icon(Icons.warning, size: 100, color: Colors.black45),
         );
       default:
-        return Text(
-          widget.fortune,
-          style: TextStyle(
-            fontSize: 40,
-            fontWeight: FontWeight.bold,
-            color: getFortuneColor(),
-          ),
-        );
+        return const SizedBox.shrink();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: backgroundColor,
       appBar: AppBar(
         title: const Text('おみくじ結果'),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            buildAnimatedFortune(),
-            const SizedBox(height: 24),
-            Text(
-              getMessageForFortune(widget.fortune),
-              style: const TextStyle(
-                fontSize: 18,
-                fontStyle: FontStyle.italic,
-                color: Colors.grey,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 36.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              buildAnimation(),
+              const SizedBox(height: 24),
+              Text(
+                widget.result,
+                style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('もう一度引く'),
-            ),
-          ],
+              const SizedBox(height: 16),
+              Text(
+                widget.message,
+                style: const TextStyle(fontSize: 20),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 40),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context); // ホームに戻る
+                },
+                icon: const Icon(Icons.refresh),
+                label: const Text('もう一度引く'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  backgroundColor: Colors.redAccent,
+                  textStyle: const TextStyle(fontSize: 18),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
