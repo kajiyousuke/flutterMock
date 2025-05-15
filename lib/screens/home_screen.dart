@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'result_screen.dart';
 import 'dart:math';
+import 'result_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -9,119 +9,96 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final List<String> fortunes = ['大吉', '中吉', '小吉', '末吉', '凶'];
+  final List<String> categories = ['総合運', '恋愛運', '仕事運', '金運', '健康運'];
+  String selectedCategory = '総合運';
+
+  late AnimationController _shakeController;
+  late Animation<double> _shakeAnimation;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 300),
+    _shakeController = AnimationController(
+      duration: const Duration(milliseconds: 500),
       vsync: this,
     );
-    _animation = Tween<double>(begin: -0.05, end: 0.05).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.elasticInOut),
-    );
+    _shakeAnimation = Tween<double>(begin: 0, end: 8)
+        .chain(CurveTween(curve: Curves.elasticIn))
+        .animate(_shakeController);
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _shakeController.dispose();
     super.dispose();
   }
 
-  String getFortune() {
-    final random = Random();
-    return fortunes[random.nextInt(fortunes.length)];
-  }
-
-  String getMessageForFortune(String fortune) {
-    switch (fortune) {
-      case '大吉':
-        return '今日は最高の一日になるでしょう！';
-      case '中吉':
-        return '良いことがありますよ！';
-      case '小吉':
-        return 'ちょっとだけ良いことがあるかも。';
-      case '末吉':
-        return 'これから運が向いてくるかも！';
-      case '凶':
-        return '気を引き締めていきましょう。';
-      default:
-        return '運勢不明...もう一度試してみてください。';
-    }
-  }
-
-  void _drawFortune() async {
-    await _controller.forward();
-    await _controller.reverse();
-
-    String fortune = getFortune();
-    String message = getMessageForFortune(fortune);
-
-    if (!mounted) return;
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ResultScreen(result: fortune, message: message),
-      ),
-    );
+  void _startFortune() {
+    _shakeController.forward(from: 0).whenComplete(() {
+      final fortune = (fortunes..shuffle()).first;
+      if (context.mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ResultScreen(
+              fortune: fortune,
+              category: selectedCategory,
+            ),
+          ),
+        );
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                'おみくじを引こう！',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.deepPurple,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              'カテゴリを選んでおみくじを引こう！',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            DropdownButton<String>(
+              value: selectedCategory,
+              icon: const Icon(Icons.arrow_drop_down),
+              elevation: 16,
+              onChanged: (String? newValue) {
+                setState(() {
+                  selectedCategory = newValue!;
+                });
+              },
+              items: categories.map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 32),
+            AnimatedBuilder(
+              animation: _shakeController,
+              builder: (context, child) {
+                return Transform.translate(
+                  offset: Offset(sin(_shakeAnimation.value) * 8, 0),
+                  child: child,
+                );
+              },
+              child: GestureDetector(
+                onTap: _startFortune,
+                child: Image.asset(
+                  'assets/images/omikuji_box.png',
+                  width: 160,
                 ),
               ),
-              const SizedBox(height: 24),
-              AnimatedBuilder(
-                animation: _animation,
-                builder: (context, child) {
-                  return Transform.rotate(
-                    angle: _animation.value,
-                    child: child,
-                  );
-                },
-                child: GestureDetector(
-                  onTap: _drawFortune,
-                  child: Image.asset(
-                    'assets/images/omikuji_box.png',
-                    width: 200,
-                    height: 200,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
-                onPressed: _drawFortune,
-                icon: const Icon(Icons.casino),
-                label: const Text('おみくじを引く'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 24, vertical: 12),
-                  backgroundColor: Colors.deepPurple,
-                  foregroundColor: Colors.white,
-                  textStyle: const TextStyle(fontSize: 18),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
