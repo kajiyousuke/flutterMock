@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'screens/splash_screen.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const OmikujiApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class OmikujiApp extends StatelessWidget {
+  const OmikujiApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +14,10 @@ class MyApp extends StatelessWidget {
       title: 'おみくじアプリ',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.red,
+        useMaterial3: true,
+        fontFamily: 'NotoSansJP',
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.pink),
+        scaffoldBackgroundColor: Colors.pink.shade50,
       ),
       home: const SplashScreen(),
     );
