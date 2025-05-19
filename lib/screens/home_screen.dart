@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'dart:math';
+import '../utils/fortune_data.dart'; 
+import '../models/fortune.dart';
 import 'result_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -9,97 +10,102 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
-  final List<String> fortunes = ['大吉', '中吉', '小吉', '末吉', '凶'];
-  final List<String> categories = ['総合運', '恋愛運', '仕事運', '金運', '健康運'];
+class _HomeScreenState extends State<HomeScreen> {
+  final List<Map<String, dynamic>> categories = [
+    {'label': '総合運', 'icon': Icons.star},
+    {'label': '恋愛運', 'icon': Icons.favorite},
+    {'label': '仕事運', 'icon': Icons.work},
+    {'label': '金運', 'icon': Icons.attach_money},
+    {'label': '健康運', 'icon': Icons.health_and_safety},
+  ];
+
   String selectedCategory = '総合運';
+  bool isShaking = false;
 
-  late AnimationController _shakeController;
-  late Animation<double> _shakeAnimation;
+  void _drawFortune() async {
+    setState(() {
+      isShaking = true;
+    });
 
-  @override
-  void initState() {
-    super.initState();
-    _shakeController = AnimationController(
-      duration: const Duration(milliseconds: 500),
-      vsync: this,
+    await Future.delayed(const Duration(milliseconds: 1000));
+
+    final fortune = FortuneData.getRandomFortune(category: selectedCategory);
+
+    if (!mounted) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ResultScreen(fortune: fortune),
+      ),
     );
-    _shakeAnimation = Tween<double>(begin: 0, end: 8)
-        .chain(CurveTween(curve: Curves.elasticIn))
-        .animate(_shakeController);
-  }
 
-  @override
-  void dispose() {
-    _shakeController.dispose();
-    super.dispose();
-  }
-
-  void _startFortune() {
-    _shakeController.forward(from: 0).whenComplete(() {
-      final fortune = (fortunes..shuffle()).first;
-      if (context.mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ResultScreen(
-              fortune: fortune,
-              category: selectedCategory,
-            ),
-          ),
-        );
-      }
+    setState(() {
+      isShaking = false;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'カテゴリを選んでおみくじを引こう！',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            DropdownButton<String>(
-              value: selectedCategory,
-              icon: const Icon(Icons.arrow_drop_down),
-              elevation: 16,
-              onChanged: (String? newValue) {
-                setState(() {
-                  selectedCategory = newValue!;
-                });
-              },
-              items: categories.map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
+      backgroundColor: Colors.pink.shade50,
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const SizedBox(height: 40),
+          const Text(
+            'カテゴリを選んでおみくじを引こう！',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 24),
+
+          // ✅ 横並びカテゴリボタン with アイコン
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              alignment: WrapAlignment.center,
+              children: categories.map((category) {
+                final isSelected = selectedCategory == category['label'];
+                return ElevatedButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      selectedCategory = category['label'];
+                    });
+                  },
+                  icon: Icon(category['icon'], size: 18),
+                  label: Text(category['label']),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isSelected ? Colors.pink : Colors.grey[300],
+                    foregroundColor: isSelected ? Colors.white : Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  ),
                 );
               }).toList(),
             ),
-            const SizedBox(height: 32),
-            AnimatedBuilder(
-              animation: _shakeController,
-              builder: (context, child) {
-                return Transform.translate(
-                  offset: Offset(sin(_shakeAnimation.value) * 8, 0),
-                  child: child,
-                );
-              },
-              child: GestureDetector(
-                onTap: _startFortune,
-                child: Image.asset(
-                  'assets/images/omikuji_box.png',
-                  width: 160,
-                ),
+          ),
+
+          const SizedBox(height: 40),
+
+          // 🎲 おみくじ箱（揺れるアニメーション）
+          GestureDetector(
+            onTap: isShaking ? null : _drawFortune,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 100),
+              transform: isShaking
+                  ? Matrix4.rotationZ(0.05)
+                  : Matrix4.rotationZ(0),
+              child: Image.asset(
+                'assets/images/omikuji_box.png',
+                width: 140,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
