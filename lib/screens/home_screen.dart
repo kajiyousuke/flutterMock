@@ -25,7 +25,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late AnimationController _shakeController;
   late AnimationController _lidController;
   late Animation<double> _shakeAnimation;
-  late Animation<double> _lidOpenAnimation;
 
   @override
   void initState() {
@@ -42,9 +41,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _lidController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
-    );
-    _lidOpenAnimation = Tween<double>(begin: 0, end: 0.5).animate(
-      CurvedAnimation(parent: _lidController, curve: Curves.easeOut),
     );
   }
 
