@@ -3,16 +3,26 @@ import '../widgets/animated_omikuji_box.dart';
 import '../widgets/confetti_widget.dart';
 import 'home_screen.dart';
 
-
-class SplashScreen extends StatelessWidget {
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
-  void _navigateToHome(BuildContext context) {
-    Future.delayed(const Duration(milliseconds: 500), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    // ⏱ 2秒後に自動でホーム画面へ遷移
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      }
     });
   }
 
@@ -26,7 +36,7 @@ class SplashScreen extends StatelessWidget {
           Center(
             child: AnimatedOmikujiBox(
               imagePath: 'assets/images/omikuji_box.png',
-              onTap: () => _navigateToHome(context), // タップでホームへ遷移
+              onTap: () {}, // 自動遷移なのでタップ不要
               size: 220,
             ),
           ),
@@ -35,7 +45,7 @@ class SplashScreen extends StatelessWidget {
             left: 0,
             right: 0,
             child: Text(
-              '画面をタップして\nおみくじを引こう！',
+              'おみくじを準備中...',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 22,
