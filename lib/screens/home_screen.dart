@@ -10,7 +10,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final List<Map<String, dynamic>> categories = [
     {'label': '総合運', 'icon': Icons.star},
     {'label': '恋愛運', 'icon': Icons.favorite},
@@ -19,26 +19,72 @@ class _HomeScreenState extends State<HomeScreen> {
     {'label': '健康運', 'icon': Icons.health_and_safety},
   ];
 
-  final Map<String, FortuneCategory> categoryMap = {
-    '総合運': FortuneCategory.general,
-    '恋愛運': FortuneCategory.love,
-    '仕事運': FortuneCategory.work,
-    '金運': FortuneCategory.money,
-    '健康運': FortuneCategory.health,
-  };
-
   String selectedCategory = '総合運';
   bool isShaking = false;
 
+  late AnimationController _shakeController;
+  late AnimationController _lidController;
+  late Animation<double> _shakeAnimation;
+  late Animation<double> _lidOpenAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _shakeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    _shakeAnimation = Tween<double>(begin: -0.05, end: 0.05).animate(
+      CurvedAnimation(parent: _shakeController, curve: Curves.elasticIn),
+    );
+
+    _lidController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _lidOpenAnimation = Tween<double>(begin: 0, end: 0.5).animate(
+      CurvedAnimation(parent: _lidController, curve: Curves.easeOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _shakeController.dispose();
+    _lidController.dispose();
+    super.dispose();
+  }
+
+  FortuneCategory _mapCategoryLabelToEnum(String label) {
+    switch (label) {
+      case '総合運':
+        return FortuneCategory.general;
+      case '恋愛運':
+        return FortuneCategory.love;
+      case '仕事運':
+        return FortuneCategory.work;
+      case '金運':
+        return FortuneCategory.money;
+      case '健康運':
+        return FortuneCategory.general;
+      default:
+        return FortuneCategory.general;
+    }
+  }
+
   void _drawFortune() async {
-    setState(() {
-      isShaking = true;
-    });
+    setState(() => isShaking = true);
 
-    await Future.delayed(const Duration(milliseconds: 1000));
+    _shakeController.repeat(reverse: true);
+    await Future.delayed(const Duration(milliseconds: 800));
+    _shakeController.stop();
 
-    final categoryEnum = categoryMap[selectedCategory] ?? FortuneCategory.general;
-    final drawnFortune = FortuneData.getRandomFortune(category: categoryEnum);
+    _lidController.forward();
+    await Future.delayed(const Duration(milliseconds: 300));
+    _lidController.reverse();
+
+    final categoryEnum = _mapCategoryLabelToEnum(selectedCategory);
+    final fortune = FortuneData.getRandomFortune(category: categoryEnum);
 
     if (!mounted) return;
 
@@ -46,37 +92,33 @@ class _HomeScreenState extends State<HomeScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => ResultScreen(
-          fortune: drawnFortune.text,
+          fortune: fortune.text,
           category: selectedCategory,
         ),
       ),
     );
 
-    setState(() {
-      isShaking = false;
-    });
+    setState(() => isShaking = false);
   }
 
   @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    backgroundColor: Colors.pink.shade50,
-    body: Center( // ← 追加: 全体を中央に寄せる
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(height: 40),
-          const Text(
-            'カテゴリを選んでおみくじを引こう！',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 24),
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.pink.shade50,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(height: 40),
+            const Text(
+              'カテゴリを選んでおみくじを引こう！',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 24),
 
-          // ✅ 横並びカテゴリボタン with アイコン（中央寄せ）
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Center( // ← 追加: Wrapを中央に寄せる
+            // カテゴリ選択ボタン
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Wrap(
                 spacing: 12,
                 runSpacing: 12,
@@ -92,40 +134,43 @@ Widget build(BuildContext context) {
                     icon: Icon(category['icon'], size: 18),
                     label: Text(category['label']),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isSelected ? Colors.pink : Colors.grey[300],
-                      foregroundColor: isSelected ? Colors.white : Colors.black,
+                      backgroundColor:
+                          isSelected ? Colors.pink : Colors.grey[300],
+                      foregroundColor:
+                          isSelected ? Colors.white : Colors.black,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
                     ),
                   );
                 }).toList(),
               ),
             ),
-          ),
 
-          const SizedBox(height: 40),
+            const SizedBox(height: 40),
 
-          // 🎲 おみくじ箱（揺れるアニメーション）
-          GestureDetector(
-            onTap: isShaking ? null : _drawFortune,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 100),
-              transform: isShaking
-                  ? Matrix4.rotationZ(0.05)
-                  : Matrix4.rotationZ(0),
-              child: Center( // ← 追加: おみくじ画像を中央に
+            // おみくじ箱（アニメーション付き）
+            GestureDetector(
+              onTap: isShaking ? null : _drawFortune,
+              child: AnimatedBuilder(
+                animation: _shakeAnimation,
+                builder: (context, child) {
+                  return Transform.rotate(
+                    angle: isShaking ? _shakeAnimation.value : 0,
+                    child: child,
+                  );
+                },
                 child: Image.asset(
                   'assets/images/omikuji_box.png',
                   width: 140,
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 }
