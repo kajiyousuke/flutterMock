@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../utils/fortune_data.dart';
 import '../models/fortune.dart';
+import '../models/fortune_pet.dart'; // ← 追加
 import 'result_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -25,6 +26,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late AnimationController _shakeController;
   late AnimationController _lidController;
   late Animation<double> _shakeAnimation;
+
+  // 🐣 育成ペットの状態
+  FortunePet _pet = FortunePet.initial();
 
   @override
   void initState() {
@@ -82,6 +86,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final categoryEnum = _mapCategoryLabelToEnum(selectedCategory);
     final fortune = FortuneData.getRandomFortune(category: categoryEnum);
 
+    // 🐣 成長データを更新
+    _pet.recordFortune(fortune.text);
+
     if (!mounted) return;
 
     Navigator.push(
@@ -90,6 +97,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         builder: (context) => ResultScreen(
           fortune: fortune.text,
           category: selectedCategory,
+          pet: _pet, // ← これで今後表示画面に成長段階を表示可能
         ),
       ),
     );
@@ -112,7 +120,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
             const SizedBox(height: 24),
 
-            // カテゴリ選択ボタン
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Wrap(
@@ -147,7 +154,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
             const SizedBox(height: 40),
 
-            // おみくじ箱（アニメーション付き）
             GestureDetector(
               onTap: isShaking ? null : _drawFortune,
               child: AnimatedBuilder(
