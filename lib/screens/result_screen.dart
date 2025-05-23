@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import '../models/fortune_pet.dart';
 
 class ResultScreen extends StatefulWidget {
   final String fortune;
   final String category;
+  final FortunePet pet;
 
   const ResultScreen({
     super.key,
     required this.fortune,
     required this.category,
+    required this.pet,
   });
 
   @override
@@ -37,7 +40,6 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
       CurvedAnimation(parent: _controller, curve: Curves.easeIn),
     );
 
-    // 自動再生
     SchedulerBinding.instance.addPostFrameCallback((_) {
       _controller.forward();
     });
@@ -108,10 +110,26 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
     }
   }
 
+  String getStageText(GrowthStage stage) {
+    switch (stage) {
+      case GrowthStage.egg:
+        return 'たまご';
+      case GrowthStage.baby:
+        return '赤ちゃん';
+      case GrowthStage.junior:
+        return '少年／少女';
+      case GrowthStage.senior:
+        return '仙人';
+      case GrowthStage.god:
+        return '神様';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final message = getMessage(widget.fortune, widget.category);
     final fortuneColor = getFortuneColor(widget.fortune);
+    final stageText = getStageText(widget.pet.stage);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -149,6 +167,11 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontSize: 18),
                 ),
+              ),
+              const SizedBox(height: 30),
+              Text(
+                '神様の成長段階：$stageText',
+                style: const TextStyle(fontSize: 16, color: Colors.black87),
               ),
               const SizedBox(height: 30),
               ElevatedButton(
