@@ -7,9 +7,9 @@ enum GrowthStage {
 }
 
 class FortunePet {
-  int totalDraws;             // 総おみくじ回数
+  int totalDraws;              // 総おみくじ回数
   Map<String, int> drawCounts; // 各運勢の回数 {'大吉': 3, '中吉': 2, ...}
-  GrowthStage stage;          // 現在の成長段階
+  GrowthStage stage;           // 現在の成長段階
 
   FortunePet({
     required this.totalDraws,
@@ -33,7 +33,7 @@ class FortunePet {
     );
   }
 
-  // 成長条件ロジック（必要に応じてチューニング）
+  // 成長条件ロジック（チューニング可能）
   void evaluateGrowth() {
     if (totalDraws >= 20) {
       stage = GrowthStage.god;
@@ -57,7 +57,23 @@ class FortunePet {
     evaluateGrowth();
   }
 
-  // 保存用変換
+  // 現在のステージのラベルを返す
+  String get stageLabel {
+    switch (stage) {
+      case GrowthStage.egg:
+        return 'たまご';
+      case GrowthStage.baby:
+        return '赤ちゃん';
+      case GrowthStage.junior:
+        return '少年 / 少女';
+      case GrowthStage.senior:
+        return '仙人';
+      case GrowthStage.god:
+        return '神様';
+    }
+  }
+
+  // JSONへ保存
   Map<String, dynamic> toJson() {
     return {
       'totalDraws': totalDraws,
@@ -66,7 +82,7 @@ class FortunePet {
     };
   }
 
-  // 読み込み用変換
+  // JSONから読み込み
   factory FortunePet.fromJson(Map<String, dynamic> json) {
     return FortunePet(
       totalDraws: json['totalDraws'],
