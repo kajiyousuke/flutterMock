@@ -1,3 +1,7 @@
+// lib/models/fortune_pet.dart
+
+import 'fortune.dart'; // FortuneCategory をここから使う
+
 enum GrowthStage {
   egg,
   baby,
@@ -89,5 +93,23 @@ class FortunePet {
       drawCounts: Map<String, int>.from(json['drawCounts']),
       stage: GrowthStage.values[json['stage']],
     );
+  }
+
+  // カテゴリラベルから FortuneCategory を取得
+  FortuneCategory getCategoryEnumFromLabel(String label) {
+    switch (label) {
+      case '総合運':
+        return FortuneCategory.general;
+      case '恋愛運':
+        return FortuneCategory.love;
+      case '仕事運':
+        return FortuneCategory.work;
+      case '金運':
+        return FortuneCategory.money;
+      case '健康運':
+        return FortuneCategory.health;
+      default:
+        return FortuneCategory.general;
+    }
   }
 }

@@ -1,8 +1,10 @@
+// lib/models/fortune.dart
+
 enum FortuneCategory {
   general,
   love,
-  money,
   work,
+  money,
   health,
 }
 

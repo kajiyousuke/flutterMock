@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import '../models/fortune_pet.dart';
+import '../utils/fortune_data.dart';
 
 class ResultScreen extends StatefulWidget {
   final String fortune;
@@ -23,9 +24,13 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
 
+  late String _currentFortune;
+
   @override
   void initState() {
     super.initState();
+
+    _currentFortune = widget.fortune;
 
     _controller = AnimationController(
       vsync: this,
@@ -90,7 +95,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
       }
     };
 
-    return messages[category]?[widget.fortune] ?? '良い一日になりますように';
+    return messages[widget.category]?[_currentFortune] ?? '良い一日になりますように';
   }
 
   Color getFortuneColor(String result) {
@@ -125,10 +130,22 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
     }
   }
 
+  void _drawAgain() {
+    final categoryEnum = widget.pet.getCategoryEnumFromLabel(widget.category);
+    final newFortune = FortuneData.getRandomFortune(category: categoryEnum);
+    widget.pet.recordFortune(newFortune.text);
+
+    setState(() {
+      _currentFortune = newFortune.text;
+      _controller.reset();
+      _controller.forward();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final message = getMessage(widget.fortune, widget.category);
-    final fortuneColor = getFortuneColor(widget.fortune);
+    final message = getMessage(_currentFortune, widget.category);
+    final fortuneColor = getFortuneColor(_currentFortune);
     final stageText = getStageText(widget.pet.stage);
 
     return Scaffold(
@@ -151,7 +168,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
               ScaleTransition(
                 scale: _scaleAnimation,
                 child: Text(
-                  widget.fortune,
+                  _currentFortune,
                   style: TextStyle(
                     fontSize: 48,
                     fontWeight: FontWeight.bold,
@@ -174,10 +191,32 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                 style: const TextStyle(fontSize: 16, color: Colors.black87),
               ),
               const SizedBox(height: 30),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('もう一度引く'),
-              )
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.home),
+                    label: const Text('ホームに戻る'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey.shade300,
+                      foregroundColor: Colors.black87,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  ElevatedButton.icon(
+                    onPressed: _drawAgain,
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('もう一度引く'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.pink.shade100,
+                      foregroundColor: Colors.pink.shade900,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
