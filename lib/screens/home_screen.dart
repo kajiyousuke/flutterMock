@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../utils/fortune_data.dart';
 import '../models/fortune.dart';
-import '../models/fortune_pet.dart'; // ← 追加
+import '../models/fortune_pet.dart';
 import 'result_screen.dart';
+import 'pet_status_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -27,12 +28,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late AnimationController _lidController;
   late Animation<double> _shakeAnimation;
 
-  // 🐣 育成ペットの状態
-  FortunePet _pet = FortunePet.initial();
+  late FortunePet pet;
 
   @override
   void initState() {
     super.initState();
+
+    pet = FortunePet.initial();
 
     _shakeController = AnimationController(
       vsync: this,
@@ -72,38 +74,44 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
-  void _drawFortune() async {
-    setState(() => isShaking = true);
-
-    _shakeController.repeat(reverse: true);
-    await Future.delayed(const Duration(milliseconds: 800));
-    _shakeController.stop();
-
-    _lidController.forward();
-    await Future.delayed(const Duration(milliseconds: 300));
-    _lidController.reverse();
-
-    final categoryEnum = _mapCategoryLabelToEnum(selectedCategory);
-    final fortune = FortuneData.getRandomFortune(category: categoryEnum);
-
-    // 🐣 成長データを更新
-    _pet.recordFortune(fortune.text);
-
-    if (!mounted) return;
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ResultScreen(
-          fortune: fortune.text,
-          category: selectedCategory,
-          pet: _pet, // ← これで今後表示画面に成長段階を表示可能
-        ),
-      ),
-    );
-
-    setState(() => isShaking = false);
+  void recordFortuneToPet(String result) {
+    setState(() {
+      pet.recordFortune(result);
+    });
   }
+
+ void _drawFortune() async {
+  setState(() => isShaking = true);
+
+  _shakeController.repeat(reverse: true);
+  await Future.delayed(const Duration(milliseconds: 800));
+  _shakeController.stop();
+
+  _lidController.forward();
+  await Future.delayed(const Duration(milliseconds: 300));
+  _lidController.reverse();
+
+  final categoryEnum = _mapCategoryLabelToEnum(selectedCategory);
+  final fortune = FortuneData.getRandomFortune(category: categoryEnum);
+
+  recordFortuneToPet(fortune.text);
+
+  if (!mounted) return;
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => ResultScreen(
+        fortune: fortune.text,
+        category: selectedCategory,
+        pet: pet,
+      ),
+    ),
+  );
+
+  setState(() => isShaking = false);
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -120,6 +128,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
             const SizedBox(height: 24),
 
+            // カテゴリ選択ボタン
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Wrap(
@@ -154,6 +163,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
             const SizedBox(height: 40),
 
+            // おみくじ箱（アニメーション付き）
             GestureDetector(
               onTap: isShaking ? null : _drawFortune,
               child: AnimatedBuilder(
@@ -167,6 +177,29 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 child: Image.asset(
                   'assets/images/omikuji_box.png',
                   width: 140,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 30),
+
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => PetStatusScreen(pet: pet),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.pets),
+              label: const Text('神様を見る'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.purple.shade100,
+                foregroundColor: Colors.purple.shade800,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
             ),
