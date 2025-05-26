@@ -11,13 +11,13 @@ class PetStatusScreen extends StatelessWidget {
       case GrowthStage.egg:
         return 'たまご';
       case GrowthStage.baby:
-        return 'あかちゃんおみくじ';
+        return 'あかちゃん';
       case GrowthStage.junior:
-        return '少年おみくじ';
+        return '少年';
       case GrowthStage.senior:
-        return '仙人おみくじ';
+        return '仙人';
       case GrowthStage.god:
-        return '神おみくじ';
+        return '神';
     }
   }
 
