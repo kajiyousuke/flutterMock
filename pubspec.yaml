@@ -69,6 +69,7 @@ flutter:
     - assets/images/stage_baby.png
     - assets/images/stage_junior.png
     - assets/images/stage_senior.png
+    - assets/images/stage_god.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
