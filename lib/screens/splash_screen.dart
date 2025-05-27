@@ -15,7 +15,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
 
-    // ⏱ 2秒後に自動でホーム画面へ遷移
+    // ⏱ 2秒後にホーム画面へ遷移
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
         Navigator.pushReplacement(
@@ -32,13 +32,25 @@ class _SplashScreenState extends State<SplashScreen> {
       backgroundColor: Colors.pink.shade50,
       body: Stack(
         children: [
-          const FullScreenConfetti(), // 🎉紙吹雪エフェクト
-          Center(
-            child: AnimatedOmikujiBox(
-              imagePath: 'assets/images/omikuji_box.png',
-              onTap: () {}, // 自動遷移なのでタップ不要
-              size: 220,
-            ),
+          const FullScreenConfetti(), // 🎉 紙吹雪エフェクト
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // 🔻 ロゴ画像を上部に表示
+              Image.asset(
+                'assets/images/omikuji_pet_logo.png',
+                width: 200,
+                height: 200,
+              ),
+              const SizedBox(height: 20),
+
+              // 📦 アニメーション付きおみくじ箱
+              AnimatedOmikujiBox(
+                imagePath: 'assets/images/omikuji_box.png',
+                onTap: () {}, // 自動遷移なのでタップ不要
+                size: 180,
+              ),
+            ],
           ),
           const Positioned(
             bottom: 100,
