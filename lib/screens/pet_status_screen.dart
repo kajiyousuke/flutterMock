@@ -47,24 +47,42 @@ class PetStatusScreen extends StatelessWidget {
         backgroundColor: Colors.pinkAccent,
       ),
       backgroundColor: Colors.pink.shade50,
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            '現在の進化：$stageName',
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+      body: Center(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '現在の進化：$stageName',
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              Image.asset(
+                imagePath,
+                height: 180,
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'おみくじを引いた回数：${pet.totalDraws}回',
+                style: const TextStyle(fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                '各運勢の回数：',
+                style: TextStyle(fontSize: 18),
+                textAlign: TextAlign.center,
+              ),
+              ...pet.drawCounts.entries.map(
+                (entry) => Text(
+                  '${entry.key}：${entry.value}回',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 20),
-          Image.asset(
-            imagePath,
-            height: 180,
-          ),
-          const SizedBox(height: 20),
-          Text('おみくじを引いた回数：${pet.totalDraws}回'),
-          const SizedBox(height: 20),
-          const Text('各運勢の回数：', style: TextStyle(fontSize: 18)),
-          ...pet.drawCounts.entries.map((entry) => Text('${entry.key}：${entry.value}回')),
-        ],
+        ),
       ),
     );
   }

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import '../widgets/animated_omikuji_box.dart';
-import '../widgets/confetti_widget.dart';
 import 'home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -15,8 +13,8 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
 
-    // ⏱ 2秒後にホーム画面へ遷移
-    Future.delayed(const Duration(seconds: 2), () {
+    // 3秒後にホーム画面へ遷移
+    Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -30,43 +28,27 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.pink.shade50,
-      body: Stack(
-        children: [
-          const FullScreenConfetti(), // 🎉 紙吹雪エフェクト
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // 🔻 ロゴ画像を上部に表示
-              Image.asset(
-                'assets/images/omikuji_pet_logo.png',
-                width: 200,
-                height: 200,
-              ),
-              const SizedBox(height: 20),
-
-              // 📦 アニメーション付きおみくじ箱
-              AnimatedOmikujiBox(
-                imagePath: 'assets/images/omikuji_box.png',
-                onTap: () {}, // 自動遷移なのでタップ不要
-                size: 180,
-              ),
-            ],
-          ),
-          const Positioned(
-            bottom: 100,
-            left: 0,
-            right: 0,
-            child: Text(
-              'おみくじを準備中...',
-              textAlign: TextAlign.center,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // ロゴ画像（中央に表示）
+            Image.asset(
+              'assets/images/omikuji_pet_logo.png',
+              width: 200,
+              fit: BoxFit.contain,
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Omikuji Pet',
               style: TextStyle(
-                fontSize: 22,
+                fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: Colors.pink,
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
