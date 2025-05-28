@@ -14,6 +14,74 @@ class _PetStatusScreenState extends State<PetStatusScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _setupAnimationForStage(widget.pet.stage);
+  }
+
+  void _setupAnimationForStage(GrowthStage stage) {
+    switch (stage) {
+      case GrowthStage.egg:
+        _animation = Tween<double>(begin: -10, end: 10).animate(
+          CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+        );
+        _scaleAnimation = AlwaysStoppedAnimation(1.0);
+        break;
+      case GrowthStage.baby:
+        _animation = Tween<double>(begin: 0, end: 10).animate(
+          CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+        );
+        _scaleAnimation = AlwaysStoppedAnimation(1.0);
+        break;
+      case GrowthStage.junior:
+        _animation = Tween<double>(begin: 0, end: -15).animate(
+          CurvedAnimation(parent: _controller, curve: Curves.elasticInOut),
+        );
+        _scaleAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
+          CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+        );
+        break;
+      case GrowthStage.senior:
+        _animation = Tween<double>(begin: -5, end: 5).animate(
+          CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+        );
+        _scaleAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
+          CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+        );
+        break;
+      case GrowthStage.god:
+        _animation = Tween<double>(begin: -8, end: 8).animate(
+          CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+        );
+        _scaleAnimation = Tween<double>(begin: 0.95, end: 1.1).animate(
+          CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+        );
+        break;
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant PetStatusScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.pet.stage != widget.pet.stage) {
+      _setupAnimationForStage(widget.pet.stage);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   String getStageName(GrowthStage stage) {
     switch (stage) {
@@ -46,25 +114,6 @@ class _PetStatusScreenState extends State<PetStatusScreen>
   }
 
   @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
-    )..repeat(reverse: true);
-
-    _animation = Tween<double>(begin: 0, end: 20).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final stageName = getStageName(widget.pet.stage);
     final imagePath = getStageImage(widget.pet.stage);
@@ -84,11 +133,14 @@ class _PetStatusScreenState extends State<PetStatusScreen>
           ),
           const SizedBox(height: 20),
           AnimatedBuilder(
-            animation: _animation,
+            animation: _controller,
             builder: (context, child) {
               return Transform.translate(
-                offset: Offset(0, -_animation.value),
-                child: child,
+                offset: Offset(widget.pet.stage == GrowthStage.egg ? _animation.value : 0, _animation.value),
+                child: Transform.scale(
+                  scale: _scaleAnimation.value,
+                  child: child,
+                ),
               );
             },
             child: Image.asset(
