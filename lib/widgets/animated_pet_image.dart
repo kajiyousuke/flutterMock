@@ -1,77 +1,15 @@
 import 'package:flutter/material.dart';
 import '../models/fortune_pet.dart';
 
-class AnimatedPetImage extends StatefulWidget {
+class AnimatedPetImage extends StatelessWidget {
   final GrowthStage stage;
   final double size;
 
   const AnimatedPetImage({
     super.key,
     required this.stage,
-    this.size = 140,
+    required this.size,
   });
-
-  @override
-  State<AnimatedPetImage> createState() => _AnimatedPetImageState();
-}
-
-class _AnimatedPetImageState extends State<AnimatedPetImage>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _moveAnimation;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    )..repeat(reverse: true);
-
-    _setupAnimations(widget.stage);
-  }
-
-  void _setupAnimations(GrowthStage stage) {
-    switch (stage) {
-      case GrowthStage.egg:
-        _moveAnimation = Tween<double>(begin: -6, end: 6).animate(
-          CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-        );
-        _scaleAnimation = AlwaysStoppedAnimation(1.0);
-        break;
-      case GrowthStage.baby:
-        _moveAnimation = Tween<double>(begin: 0, end: 10).animate(
-          CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-        );
-        _scaleAnimation = AlwaysStoppedAnimation(1.0);
-        break;
-      case GrowthStage.junior:
-        _moveAnimation = Tween<double>(begin: -8, end: 8).animate(
-          CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-        );
-        _scaleAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
-          CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-        );
-        break;
-      case GrowthStage.senior:
-        _moveAnimation = Tween<double>(begin: -5, end: 5).animate(
-          CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-        );
-        _scaleAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
-          CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-        );
-        break;
-      case GrowthStage.god:
-        _moveAnimation = Tween<double>(begin: -8, end: 8).animate(
-          CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-        );
-        _scaleAnimation = Tween<double>(begin: 0.95, end: 1.1).animate(
-          CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-        );
-        break;
-    }
-  }
 
   String _getImagePath(GrowthStage stage) {
     switch (stage) {
@@ -88,31 +26,48 @@ class _AnimatedPetImageState extends State<AnimatedPetImage>
     }
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  String _getSpeechText(GrowthStage stage) {
+    switch (stage) {
+      case GrowthStage.egg:
+        return 'ここから始まるよ…！';
+      case GrowthStage.baby:
+        return 'おみくじもっと引いて〜！';
+      case GrowthStage.junior:
+        return '運勢って奥深いね！';
+      case GrowthStage.senior:
+        return 'まだまだ成長できるぞ';
+      case GrowthStage.god:
+        return 'ついに神になったぞ…！';
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final imagePath = _getImagePath(widget.stage);
-
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return Transform.translate(
-          offset: Offset(_moveAnimation.value, _moveAnimation.value),
-          child: Transform.scale(
-            scale: _scaleAnimation.value,
-            child: child,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // 吹き出し
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          margin: const EdgeInsets.only(bottom: 8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
           ),
-        );
-      },
-      child: Image.asset(
-        imagePath,
-        height: widget.size,
-      ),
+          child: Text(
+            _getSpeechText(stage),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
+        ),
+
+        // ペット画像
+        Image.asset(
+          _getImagePath(stage),
+          height: size,
+        ),
+      ],
     );
   }
 }
