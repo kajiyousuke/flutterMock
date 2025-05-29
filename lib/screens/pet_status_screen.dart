@@ -70,14 +70,6 @@ class _PetStatusScreenState extends State<PetStatusScreen>
   }
 
   @override
-  void didUpdateWidget(covariant PetStatusScreen oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.pet.stage != widget.pet.stage) {
-      _setupAnimationForStage(widget.pet.stage);
-    }
-  }
-
-  @override
   void dispose() {
     _controller.dispose();
     super.dispose();
@@ -124,37 +116,43 @@ class _PetStatusScreenState extends State<PetStatusScreen>
         backgroundColor: Colors.pinkAccent,
       ),
       backgroundColor: Colors.pink.shade50,
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            '現在の進化：$stageName',
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 20),
-          AnimatedBuilder(
-            animation: _controller,
-            builder: (context, child) {
-              return Transform.translate(
-                offset: Offset(widget.pet.stage == GrowthStage.egg ? _animation.value : 0, _animation.value),
-                child: Transform.scale(
-                  scale: _scaleAnimation.value,
-                  child: child,
-                ),
-              );
-            },
-            child: Image.asset(
-              imagePath,
-              height: 180,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '現在の進化：$stageName',
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-          ),
-          const SizedBox(height: 20),
-          Text('おみくじを引いた回数：${widget.pet.totalDraws}回'),
-          const SizedBox(height: 20),
-          const Text('各運勢の回数：', style: TextStyle(fontSize: 18)),
-          ...widget.pet.drawCounts.entries
-              .map((entry) => Text('${entry.key}：${entry.value}回')),
-        ],
+            const SizedBox(height: 20),
+            AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) {
+                return Transform.translate(
+                  offset: Offset(
+                    widget.pet.stage == GrowthStage.egg ? _animation.value : 0,
+                    _animation.value,
+                  ),
+                  child: Transform.scale(
+                    scale: _scaleAnimation.value,
+                    child: child,
+                  ),
+                );
+              },
+              child: Image.asset(
+                imagePath,
+                height: 180,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text('おみくじを引いた回数：${widget.pet.totalDraws}回'),
+            const SizedBox(height: 20),
+            const Text('各運勢の回数：', style: TextStyle(fontSize: 18)),
+            ...widget.pet.drawCounts.entries.map(
+              (entry) => Text('${entry.key}：${entry.value}回'),
+            ),
+          ],
+        ),
       ),
     );
   }
