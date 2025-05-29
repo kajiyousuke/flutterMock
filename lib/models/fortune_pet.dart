@@ -30,12 +30,20 @@ class FortunePet {
         '中吉': 0,
         '吉': 0,
         '小吉': 0,
-        '末吉': 0,
         '凶': 0,
       },
       stage: GrowthStage.egg,
     );
   }
+
+  Map<String, int> fortuneCounts = {
+  '大吉': 0,
+  '中吉': 0,
+  '吉': 0,
+  '小吉': 0,
+  '凶': 0,
+};
+
 
   // 成長条件ロジック（チューニング可能）
   void evaluateGrowth() {
