@@ -9,7 +9,7 @@ class StatsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fortuneCounts = pet.fortuneCounts;
+    final fortuneCounts = pet.drawCounts;
 
     final labels = ['大吉', '中吉', '吉', '小吉', '凶'];
     final values = [
@@ -33,22 +33,44 @@ class StatsScreen extends StatelessWidget {
             barTouchData: BarTouchData(enabled: true),
             titlesData: FlTitlesData(
               leftTitles: AxisTitles(
-                sideTitles: SideTitles(showTitles: true),
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  interval: 1,
+                  getTitlesWidget: (value, meta) {
+                    return Text(value.toInt().toString(), style: TextStyle(fontSize: 10));
+                  },
+                ),
+              ),
+              rightTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  interval: 1,
+                  getTitlesWidget: (value, meta) {
+                    return Text(value.toInt().toString(), style: TextStyle(fontSize: 10));
+                  },
+                ),
               ),
               bottomTitles: AxisTitles(
                 sideTitles: SideTitles(
                   showTitles: true,
+                  reservedSize: 32, // ラベル用のスペースを広げる
                   getTitlesWidget: (double value, TitleMeta meta) {
                     final index = value.toInt();
                     if (index < labels.length) {
                       return Padding(
                         padding: const EdgeInsets.only(top: 8.0),
-                        child: Text(labels[index], style: TextStyle(fontSize: 12)),
+                        child: Text(
+                          labels[index],
+                          style: TextStyle(fontSize: 12),
+                        ),
                       );
                     }
                     return const SizedBox.shrink();
                   },
                 ),
+              ),
+              topTitles: AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
               ),
             ),
             barGroups: List.generate(labels.length, (index) {
@@ -61,6 +83,8 @@ class StatsScreen extends StatelessWidget {
                 )
               ]);
             }),
+            gridData: FlGridData(show: true),
+            borderData: FlBorderData(show: true),
           ),
         ),
       ),

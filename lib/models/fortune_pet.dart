@@ -1,5 +1,3 @@
-// lib/models/fortune_pet.dart
-
 import 'fortune.dart'; // FortuneCategory をここから使う
 
 enum GrowthStage {
@@ -36,15 +34,6 @@ class FortunePet {
     );
   }
 
-  Map<String, int> fortuneCounts = {
-  '大吉': 0,
-  '中吉': 0,
-  '吉': 0,
-  '小吉': 0,
-  '凶': 0,
-};
-
-
   // 成長条件ロジック（チューニング可能）
   void evaluateGrowth() {
     if (totalDraws >= 20) {
@@ -68,6 +57,9 @@ class FortunePet {
     }
     evaluateGrowth();
   }
+
+  // グラフなどで使用するために counts を返す getter
+  Map<String, int> get fortuneCounts => drawCounts;
 
   // 現在のステージのラベルを返す
   String get stageLabel {
