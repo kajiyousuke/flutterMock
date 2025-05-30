@@ -4,6 +4,7 @@ import '../models/fortune.dart';
 import '../models/fortune_pet.dart';
 import 'result_screen.dart';
 import 'pet_status_screen.dart';
+import 'stats_screen.dart'; // ← 追加
 import '../widgets/animated_pet_image.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -176,6 +177,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
                     const SizedBox(height: 30),
 
+                    // 🐾 ペット確認ボタン
                     ElevatedButton.icon(
                       onPressed: () {
                         Navigator.push(
@@ -196,6 +198,31 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                       ),
                     ),
+
+                    const SizedBox(height: 16),
+
+                    // 📊 運勢ランキングボタン（追加）
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => StatsScreen(pet: pet),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.bar_chart),
+                      label: const Text('運勢ランキング'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange.shade100,
+                        foregroundColor: Colors.deepOrange,
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+
                     const SizedBox(height: 40),
                   ],
                 ),
