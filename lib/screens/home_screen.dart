@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/fortune_data.dart';
 import '../models/fortune.dart';
 import '../models/fortune_pet.dart';
 import 'result_screen.dart';
 import 'pet_status_screen.dart';
-import 'stats_screen.dart'; // ← 追加
+import 'stats_screen.dart';
 import '../widgets/animated_pet_image.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -25,17 +26,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   String selectedCategory = '総合運';
   bool isShaking = false;
-
   late AnimationController _shakeController;
   late Animation<double> _shakeAnimation;
-
   late FortunePet pet;
+  String petName = '';
 
   @override
   void initState() {
     super.initState();
-
     pet = FortunePet.initial();
+    petName = pet.name;
+    _loadPetName();
 
     _shakeController = AnimationController(
       vsync: this,
@@ -44,6 +45,53 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     _shakeAnimation = Tween<double>(begin: -0.05, end: 0.05).animate(
       CurvedAnimation(parent: _shakeController, curve: Curves.elasticIn),
+    );
+  }
+
+  Future<void> _loadPetName() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      petName = prefs.getString('pet_name') ?? pet.name;
+      pet.name = petName;
+    });
+  }
+
+  Future<void> _savePetName(String name) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('pet_name', name);
+    setState(() {
+      petName = name;
+      pet.name = name;
+    });
+  }
+
+  void _showNameInputDialog() {
+    final controller = TextEditingController(text: petName);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('ペットに名前をつけよう'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(hintText: 'ペットの名前を入力'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('キャンセル'),
+          ),
+          TextButton(
+            onPressed: () {
+              final newName = controller.text.trim();
+              if (newName.isNotEmpty) {
+                _savePetName(newName);
+              }
+              Navigator.pop(context);
+            },
+            child: const Text('保存'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -90,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     if (!mounted) return;
 
-    Navigator.push(
+    final updatedPet = await Navigator.push<FortunePet>(
       context,
       MaterialPageRoute(
         builder: (context) => ResultScreen(
@@ -101,6 +149,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
     );
 
+    if (updatedPet != null) {
+      setState(() {
+        pet = updatedPet;
+      });
+    }
+
     setState(() => isShaking = false);
   }
 
@@ -108,10 +162,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.pink.shade50,
+      appBar: AppBar(
+        title: const Text('ホーム'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: _showNameInputDialog,
+            tooltip: '名前を変更',
+          )
+        ],
+      ),
       body: SafeArea(
         child: Row(
           children: [
-            // 🧾 左側：操作UI
+            // 左側：操作UI
             Expanded(
               flex: 3,
               child: SingleChildScrollView(
@@ -124,8 +188,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 24),
-
-                    // 🎯 カテゴリボタン
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Wrap(
@@ -154,10 +216,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         }).toList(),
                       ),
                     ),
-
                     const SizedBox(height: 36),
-
-                    // 🎲 おみくじ箱
                     GestureDetector(
                       onTap: isShaking ? null : _drawFortune,
                       child: AnimatedBuilder(
@@ -174,10 +233,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 30),
-
-                    // 🐾 ペット確認ボタン
                     ElevatedButton.icon(
                       onPressed: () {
                         Navigator.push(
@@ -198,10 +254,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 16),
-
-                    // 📊 運勢ランキングボタン（追加）
                     ElevatedButton.icon(
                       onPressed: () {
                         Navigator.push(
@@ -222,21 +275,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 40),
                   ],
                 ),
               ),
             ),
-
-            // 🐣 右側：ペット＋吹き出し
+            // 右側：ペット＋吹き出し
             Expanded(
               flex: 2,
-              child: Center(
-                child: AnimatedPetImage(
-                  stage: pet.stage,
-                  size: 140,
-                ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  AnimatedPetImage(
+                    stage: pet.stage,
+                    size: 140,
+                  ),
+                  const SizedBox(height: 8),
+                  Text('名前：$petName', style: const TextStyle(fontSize: 18)),
+                ],
               ),
             ),
           ],

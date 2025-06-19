@@ -12,11 +12,13 @@ class FortunePet {
   int totalDraws;              // 総おみくじ回数
   Map<String, int> drawCounts; // 各運勢の回数 {'大吉': 3, '中吉': 2, ...}
   GrowthStage stage;           // 現在の成長段階
+  String name;
 
   FortunePet({
     required this.totalDraws,
     required this.drawCounts,
     required this.stage,
+    required this.name,
   });
 
   // デフォルト状態（はじめてアプリを開いたとき）
@@ -31,6 +33,7 @@ class FortunePet {
         '凶': 0,
       },
       stage: GrowthStage.egg,
+      name: 'なまえなし',
     );
   }
 
@@ -83,6 +86,7 @@ class FortunePet {
       'totalDraws': totalDraws,
       'drawCounts': drawCounts,
       'stage': stage.index,
+      'name': name,
     };
   }
 
@@ -92,6 +96,7 @@ class FortunePet {
       totalDraws: json['totalDraws'],
       drawCounts: Map<String, int>.from(json['drawCounts']),
       stage: GrowthStage.values[json['stage']],
+      name: json['name'] ?? 'なまえなし',
     );
   }
 
