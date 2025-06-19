@@ -175,7 +175,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       body: SafeArea(
         child: Row(
           children: [
-            // 左側：操作UI
             Expanded(
               flex: 3,
               child: SingleChildScrollView(
@@ -280,7 +279,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               ),
             ),
-            // 右側：ペット＋吹き出し
             Expanded(
               flex: 2,
               child: Column(
